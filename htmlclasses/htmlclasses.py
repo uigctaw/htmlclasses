@@ -1,0 +1,135 @@
+import inspect
+import types
+
+OWNED_ELEMENTS = '__OWNED_ELEMENTS'
+OWNED_ELEMENT_INSTANCES = '__OWNED_ELEMENT_INSTANCES'
+ELEMENT_ATTRIBUTES = '__ELEMENT_ATTRIBUTES'
+TEXT = 'TEXT'
+
+
+class _Element:
+    pass
+
+
+def _is_elem_attribute(name):
+    return not name.startswith('_') and name != TEXT
+
+
+def _to_elem_attr_name(name):
+    return name.rstrip('_').replace('_', '-')
+
+
+def _is_elem_class(value):
+    return inspect.isclass(value) and issubclass(value, _Element)
+
+
+def _is_future_element_class(name, value):
+    return inspect.isclass(value) and not name.startswith('_')
+
+
+def _create_element_class(name, value):
+
+    def populate_namespace(ns):
+        ns[TEXT] = ns.get(TEXT, '')
+        for k, v in value.__dict__.items():
+            ns[k] = v
+
+    new = types.new_class(
+            name,
+            (_Element,),
+            kwds=dict(metaclass=Meta),
+            exec_body=populate_namespace,
+            )
+
+    return new
+
+
+class DictForCollectingElements(dict):
+
+    def __init__(self):
+        super().__init__()
+        self[OWNED_ELEMENTS] = []
+        self[ELEMENT_ATTRIBUTES] = {}
+
+    def __setitem__(self, name, value):
+        if _is_elem_class(value):
+            self[OWNED_ELEMENTS].append(value)
+        elif _is_future_element_class(name, value):
+            self[name] = _create_element_class(name, value)
+        elif _is_elem_attribute(name):
+            self[ELEMENT_ATTRIBUTES][_to_elem_attr_name(name)] = value
+        else:
+            super().__setitem__(name, value)
+
+
+class Meta(type):
+
+    @classmethod
+    def __prepare__(mcs, name, bases, **kwargs):
+        d = DictForCollectingElements()
+        elements_owned_by_bases = sum(
+                map(lambda base: getattr(base, OWNED_ELEMENTS, []), bases),
+                [],
+                )
+        d[OWNED_ELEMENTS].extend(elements_owned_by_bases)
+
+        base_element_attributes = {
+                k: v
+                for base in bases
+                for k, v in getattr(base, ELEMENT_ATTRIBUTES, {}).items()
+        }
+        d[ELEMENT_ATTRIBUTES] = base_element_attributes
+
+        return d
+
+
+class E(_Element, metaclass=Meta):
+
+    TEXT = ''
+
+
+def to_string(
+        element,
+        *,
+        indent=False,
+        encoding='utf-8',
+        doctype='<!DOCTYPE html>\n',
+        _parent_indent='',
+        ):
+    doctype = doctype or ''
+    indent = indent or ''
+
+    children = ''.join(
+            to_string(
+                e(),
+                indent=indent,
+                encoding=encoding,
+                doctype='',
+                _parent_indent=_parent_indent + indent,
+                )
+            for e in getattr(element, OWNED_ELEMENTS)
+            )
+    tag = type(element).__name__
+    attrs = ' '.join(
+            f'{k}="{v}"'
+            for k, v in getattr(element, ELEMENT_ATTRIBUTES).items()
+            )
+
+    attrs = ' ' + attrs if attrs else ''
+    lb = '\n' if indent and children else ''
+
+    if element.TEXT == '' and not children:
+        tag = f'{_parent_indent}<{tag}{attrs}/>{lb}'
+    else:
+        tag = (
+                f'{_parent_indent}<{tag}{attrs}>{element.TEXT}{lb}'
+                f'{children}{lb}'
+                f'{_parent_indent if lb else ""}</{tag}>'
+                )
+
+    string = doctype + tag
+
+    if encoding:
+        return string.encode(encoding)
+    else:
+        return string
