@@ -2,7 +2,8 @@ from htmlclasses.htmlclasses import E, to_string
 
 
 def to_str(element):
-    return to_string(element, indent=False, encoding=None, doctype=None)
+    return to_string(
+            element, indent=False, encoding=None, prepend_doctype=None)
 
 
 def test_html_with_no_data():
@@ -179,7 +180,7 @@ def test_bytes():
     class foo(E):
         pass
 
-    assert b'<foo/>' == to_string(foo(), doctype=None)
+    assert b'<foo/>' == to_string(foo(), prepend_doctype=None)
 
 
 def test_no_need_to_subclass():
@@ -207,7 +208,7 @@ def test_indent_print():
                 TEXT = 'qux'
                 quux = 'quz'
 
-    actual = to_string(foo(), indent='  ', doctype=None, encoding=None)
+    actual = to_string(foo(), indent='  ', prepend_doctype=None, encoding=None)
     assert actual == (
             '<foo>\n'
             '  <bar>\n'
