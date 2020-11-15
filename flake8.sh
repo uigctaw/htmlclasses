@@ -1,3 +1,3 @@
 #!/bin/bash
-.venv/bin/python -m flake8 htmlclasses
-.venv/bin/python -m flake8 tests
+poetry run python -m flake8 htmlclasses
+poetry run python -m flake8 tests

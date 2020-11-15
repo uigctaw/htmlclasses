@@ -116,7 +116,7 @@ def to_string(
 
     Parameters
     ----------
-    element: n/c
+    element: n/c.
     indent: If it's given the code will be indented accordingly.
         Multi line TEXT can produce ugly results, because it's not given
         any special treatment. Perhaps I should just convert the `E`

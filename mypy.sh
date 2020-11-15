@@ -1,3 +1,3 @@
 #!/bin/bash
-.venv/bin/python -m mypy htmlclasses
-.venv/bin/python -m mypy tests
+poetry run python -m mypy htmlclasses
+poetry run python -m mypy tests

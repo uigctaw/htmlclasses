@@ -1,1 +1,2 @@
-.venv/bin/python -m pytest
+#!/bin/bash
+poetry run python -m pytest
