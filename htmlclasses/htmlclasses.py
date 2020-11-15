@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 import inspect
 import types
 
@@ -109,10 +109,9 @@ def to_string(
         element: E,
         *,
         indent: Optional[str] = None,
-        encoding: Optional[str] = 'utf-8',
         prepend_doctype: bool = True,
         _parent_indent: str = '',
-        ) -> Union[str, bytes]:
+        ) -> str:
     """Serialize an E instance.
 
     Parameters
@@ -123,8 +122,6 @@ def to_string(
         any special treatment. Perhaps I should just convert the `E`
         instance to XML tree (using either `xml` or `lxml` libraries)
         and just leave the serialization to them.
-    encoding: If given you'll bytes will be returned (encoded accordingly).
-        Otherwise you will get a plain python `str` object.
     prepend_doctype: Whether to prepend the DOCTYPE html declaration.
     _parent_indent: It's private. Don't use.
 
@@ -135,13 +132,11 @@ def to_string(
 
     doctype = '<!DOCTYPE html>\n' if prepend_doctype else ''
     indent = indent or ''
-    rtype = bytes if encoding else str
 
-    children = rtype().join(
+    children = ''.join(
             to_string(
                 e(),
                 indent=indent,
-                encoding=encoding,
                 prepend_doctype=False,
                 _parent_indent=_parent_indent + indent,
                 )
@@ -167,7 +162,4 @@ def to_string(
 
     string = doctype + tag
 
-    if encoding:
-        return string.encode(encoding)
-    else:
-        return string
+    return string
