@@ -1,3 +1,4 @@
+from typing import Optional
 import inspect
 import types
 
@@ -24,10 +25,19 @@ def _is_elem_class(value):
 
 
 def _is_future_element_class(name, value):
-    return inspect.isclass(value) and not name.startswith('_')
+    # We want to be able to save few bytes byt not having to type
+    # `class foo(E):` and instread just write `class foo:`
+    # Attributes that meet these requirements will be converted
+    # converted to subclasses of _Element.
+    return (
+            inspect.isclass(value)
+            and not issubclass(value, _Element)
+            and not name.startswith('_')
+            )
 
 
 def _create_element_class(name, value):
+    # This coverts plain `class foo:` to `class foo(_Element)`
 
     def populate_namespace(ns):
         ns[TEXT] = ns.get(TEXT, '')
@@ -47,6 +57,13 @@ def _create_element_class(name, value):
 class DictForCollectingElements(dict):
 
     def __init__(self):
+        """Collect some (class) attributes on the fly
+
+        One thing to remember is that normally Python class cannot
+        have 2 different attributes with the same name. But given
+        that we want to use Python classes to construct html elements
+        we have to relax that constraint.
+        """
         super().__init__()
         self[OWNED_ELEMENTS] = []
         self[ELEMENT_ATTRIBUTES] = {}
@@ -89,22 +106,38 @@ class E(_Element, metaclass=Meta):
 
 
 def to_string(
-        element,
+        element: E,
         *,
-        indent=False,
-        encoding='utf-8',
-        doctype='<!DOCTYPE html>\n',
-        _parent_indent='',
-        ):
-    doctype = doctype or ''
+        indent: Optional[str] = None,
+        prepend_doctype: bool = True,
+        _parent_indent: str = '',
+        ) -> str:
+    """Serialize an E instance.
+
+    Parameters
+    ----------
+    element: n/c.
+    indent: If it's given the code will be indented accordingly.
+        Multi line TEXT can produce ugly results, because it's not given
+        any special treatment. Perhaps I should just convert the `E`
+        instance to XML tree (using either `xml` or `lxml` libraries)
+        and just leave the serialization to them.
+    prepend_doctype: Whether to prepend the DOCTYPE html declaration.
+    _parent_indent: It's private. Don't use.
+
+    Returns
+    -------
+    Valid (hopefully) HTML string.
+    """
+
+    doctype = '<!DOCTYPE html>\n' if prepend_doctype else ''
     indent = indent or ''
 
     children = ''.join(
             to_string(
                 e(),
                 indent=indent,
-                encoding=encoding,
-                doctype='',
+                prepend_doctype=False,
                 _parent_indent=_parent_indent + indent,
                 )
             for e in getattr(element, OWNED_ELEMENTS)
@@ -129,7 +162,4 @@ def to_string(
 
     string = doctype + tag
 
-    if encoding:
-        return string.encode(encoding)
-    else:
-        return string
+    return string

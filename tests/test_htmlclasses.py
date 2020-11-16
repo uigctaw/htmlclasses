@@ -2,7 +2,7 @@ from htmlclasses.htmlclasses import E, to_string
 
 
 def to_str(element):
-    return to_string(element, indent=False, encoding=None, doctype=None)
+    return to_string(element, indent=False, prepend_doctype=None)
 
 
 def test_html_with_no_data():
@@ -10,7 +10,7 @@ def test_html_with_no_data():
     class html(E):
         pass
 
-    assert to_string(html(), encoding=None) == '<!DOCTYPE html>\n<html/>'
+    assert to_string(html()) == '<!DOCTYPE html>\n<html/>'
 
 
 def test_html_with_data():
@@ -18,7 +18,7 @@ def test_html_with_data():
     class html(E):
         TEXT = 'Hello world!'
 
-    assert to_string(html(), encoding=None) == (
+    assert to_string(html()) == (
             '<!DOCTYPE html>\n<html>Hello world!</html>')
 
 
@@ -32,7 +32,7 @@ def test_html_with_head_and_body():
         class body(E):
             pass
 
-    assert to_string(html(), indent=False, encoding=None) == (
+    assert to_string(html(), indent=False) == (
             '<!DOCTYPE html>\n<html><head/><body/></html>')
 
 
@@ -174,14 +174,6 @@ def test_adding_attributes_with_subclass():
     assert to_str(Y()) == '<Y foo="bar" baz="qux"/>'
 
 
-def test_bytes():
-
-    class foo(E):
-        pass
-
-    assert b'<foo/>' == to_string(foo(), doctype=None)
-
-
 def test_no_need_to_subclass():
 
     class foo(E):
@@ -207,7 +199,7 @@ def test_indent_print():
                 TEXT = 'qux'
                 quux = 'quz'
 
-    actual = to_string(foo(), indent='  ', doctype=None, encoding=None)
+    actual = to_string(foo(), indent='  ', prepend_doctype=None)
     assert actual == (
             '<foo>\n'
             '  <bar>\n'
