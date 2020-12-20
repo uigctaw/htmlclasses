@@ -36,7 +36,7 @@ def test_html_with_head_and_body():
             '<!DOCTYPE html>\n<html><head/><body/></html>')
 
 
-def test_dupe_tags_are_fine():
+def test_duplicate_tags_are_fine():
 
     class body(E):
 

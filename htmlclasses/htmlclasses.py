@@ -24,10 +24,11 @@ def _is_elem_class(value):
     return inspect.isclass(value) and issubclass(value, _Element)
 
 
-def _is_future_element_class(name, value):
-    # We want to be able to save few bytes byt not having to type
-    # `class foo(E):` and instread just write `class foo:`
-    # Attributes that meet these requirements will be converted
+def _can_be_converted_to_element_class(name, value):
+    # Save few key strokes by not having to type `class foo(E):`
+    # and instead just write `class foo:`.
+    #
+    # Attributes that meet the requirements bekiw will be
     # converted to subclasses of _Element.
     return (
             inspect.isclass(value)
@@ -37,7 +38,7 @@ def _is_future_element_class(name, value):
 
 
 def _create_element_class(name, value):
-    # This coverts plain `class foo:` to `class foo(_Element)`
+    """Covert plain `class foo:` to sublcass of `_Element`"""
 
     def populate_namespace(ns):
         ns[TEXT] = ns.get(TEXT, '')
@@ -57,12 +58,12 @@ def _create_element_class(name, value):
 class DictForCollectingElements(dict):
 
     def __init__(self):
-        """Collect some (class) attributes on the fly
+        """Collect some (class) attributes on the fly.
 
-        One thing to remember is that normally Python class cannot
-        have 2 different attributes with the same name. But given
-        that we want to use Python classes to construct html elements
-        we have to relax that constraint.
+        Python class cannot have 2 different attributes
+        under the same name.
+        But given that we want to use Python classes to construct
+        html elements we have to circumvent this constraint.
         """
         super().__init__()
         self[OWNED_ELEMENTS] = []
@@ -71,7 +72,7 @@ class DictForCollectingElements(dict):
     def __setitem__(self, name, value):
         if _is_elem_class(value):
             self[OWNED_ELEMENTS].append(value)
-        elif _is_future_element_class(name, value):
+        elif _can_be_converted_to_element_class(name, value):
             self[name] = _create_element_class(name, value)
         elif _is_elem_attribute(name):
             self[ELEMENT_ATTRIBUTES][_to_elem_attr_name(name)] = value
@@ -85,7 +86,7 @@ class Meta(type):
     def __prepare__(mcs, name, bases, **kwargs):
         d = DictForCollectingElements()
         elements_owned_by_bases = sum(
-                map(lambda base: getattr(base, OWNED_ELEMENTS, []), bases),
+                [getattr(base, OWNED_ELEMENTS, []) for base in bases],
                 [],
                 )
         d[OWNED_ELEMENTS].extend(elements_owned_by_bases)
@@ -119,9 +120,7 @@ def to_string(
     element: n/c.
     indent: If it's given the code will be indented accordingly.
         Multi line TEXT can produce ugly results, because it's not given
-        any special treatment. Perhaps I should just convert the `E`
-        instance to XML tree (using either `xml` or `lxml` libraries)
-        and just leave the serialization to them.
+        any special treatment.
     prepend_doctype: Whether to prepend the DOCTYPE html declaration.
     _parent_indent: It's private. Don't use.
 
@@ -142,22 +141,24 @@ def to_string(
                 )
             for e in getattr(element, OWNED_ELEMENTS)
             )
+
     tag = type(element).__name__
+
     attrs = ' '.join(
             f'{k}="{v}"'
             for k, v in getattr(element, ELEMENT_ATTRIBUTES).items()
             )
 
     attrs = ' ' + attrs if attrs else ''
-    lb = '\n' if indent and children else ''
+    line_break = '\n' if indent and children else ''
 
     if element.TEXT == '' and not children:
-        tag = f'{_parent_indent}<{tag}{attrs}/>{lb}'
+        tag = f'{_parent_indent}<{tag}{attrs}/>{line_break}'
     else:
         tag = (
-                f'{_parent_indent}<{tag}{attrs}>{element.TEXT}{lb}'
-                f'{children}{lb}'
-                f'{_parent_indent if lb else ""}</{tag}>'
+                f'{_parent_indent}<{tag}{attrs}>{element.TEXT}{line_break}'
+                f'{children}{line_break}'
+                f'{line_break and _parent_indent}</{tag}>'
                 )
 
     string = doctype + tag

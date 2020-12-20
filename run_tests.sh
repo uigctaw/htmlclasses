@@ -1,2 +1,2 @@
 #!/bin/bash
-exit 0
+poetry run python -m pytest
