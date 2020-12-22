@@ -1,6 +1,6 @@
 # htmlclasses
 
-Python in, HTML out
+Python in, HTML out.
 
 There are templating engines making it possible to write code
 in HTML template files. However, I would very much prefer
