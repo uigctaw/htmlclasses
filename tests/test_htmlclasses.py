@@ -199,7 +199,7 @@ def test_indenting_of_elements_with_single_line_texts():
                 TEXT = 'qux'
                 quux = 'quz'
 
-            class baz:
+            class baz:  # noqa: F811
 
                 TEXT = 'qux2'
                 quux = 'quz2'
@@ -226,7 +226,7 @@ def test_indenting_of_multi_line_text():
 
                 TEXT = 'foo\nbar\nbaz'
 
-        class bar:
+        class bar:  # noqa: F811
 
             TEXT = 'foo\nbar'
 
@@ -255,7 +255,7 @@ def test_new_lines_in_text_are_preserved():
 
                 TEXT = 'foo\nbar\nbaz'
 
-        class bar:
+        class bar:  # noqa: F811
 
             TEXT = 'foo\nbar'
 

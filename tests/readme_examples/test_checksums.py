@@ -11,6 +11,3 @@ def test_calculated_checksums_are_same_as_saved_checksums():
     ]
     assert calculated
     assert not difference, difference
-
-
-

@@ -12,7 +12,7 @@ ALL_EXAMPLES = 'all'
 THIS_MODULE_PATH = pathlib.Path(__file__).parent
 CHECKSUM_FILE = 'checksums.txt'
 
-_path_text = namedtuple('PathText', 'name text') 
+_path_text = namedtuple('PathText', 'name text')
 
 
 def iter_examples():
@@ -46,6 +46,7 @@ def read_checksums():
 def file_here(name):
     return THIS_MODULE_PATH.joinpath(name)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -60,4 +61,3 @@ if __name__ == '__main__':
             json.dump(checksums, fh)
     else:
         print('Doing nothing.')
-
