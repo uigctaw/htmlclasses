@@ -1,4 +1,5 @@
-from collections import namedtuple
+from dataclasses import dataclass
+from importlib import import_module
 import argparse
 import hashlib
 import json
@@ -7,12 +8,22 @@ import re
 import yaml
 
 
-EXAMPLE_FILE_PATTERN = re.compile(r'example_\w+\.py')
+EXAMPLE_FILE_PATTERN = re.compile(r'example_(\w+)\.py')
 ALL_EXAMPLES = 'all'
 THIS_MODULE_PATH = pathlib.Path(__file__).parent
 CHECKSUM_FILE = 'checksums.txt'
 
-_path_text = namedtuple('PathText', 'name text')
+
+@dataclass
+class PathText:
+
+    name: str
+    text: str
+
+    @property
+    def pretty_name(self):
+        stripped_name, = EXAMPLE_FILE_PATTERN.match(self.name).groups()
+        return stripped_name.replace('_', ' ').title()
 
 
 def iter_examples():
@@ -24,7 +35,14 @@ def iter_examples():
         with open(example, 'r') as fh:
             text = fh.read()
         example_file_name = pathlib.Path(example).parts[-1]
-        yield _path_text(name=example_file_name, text=text)
+        yield PathText(name=example_file_name, text=text)
+
+
+def iter_example_modules():
+    for example in iter_examples():
+        module = import_module(
+                'tests.readme_examples.' + example.name.strip('.py'))
+        yield module
 
 
 def _calculate_checksums(examples):

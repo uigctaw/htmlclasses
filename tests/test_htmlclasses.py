@@ -2,7 +2,7 @@ from htmlclasses.htmlclasses import E, to_string
 
 
 def to_str(element):
-    return to_string(element, indent=None, prepend_doctype=False)
+    return to_string(element, indent=None, html_doctype=False)
 
 
 def test_html_with_no_data():
@@ -204,7 +204,7 @@ def test_indenting_of_elements_with_single_line_texts():
                 TEXT = 'qux2'
                 quux = 'quz2'
 
-    actual = to_string(foo(), indent='  ', prepend_doctype=False)
+    actual = to_string(foo(), indent='  ', html_doctype=False)
 
     assert actual == (
             '<foo>\n'
@@ -230,7 +230,7 @@ def test_indenting_of_multi_line_text():
 
             TEXT = 'foo\nbar'
 
-    actual = to_string(foo(), indent='  ', prepend_doctype=False)
+    actual = to_string(foo(), indent='  ', html_doctype=False)
 
     assert actual == (
             '<foo>\n'
@@ -259,7 +259,7 @@ def test_new_lines_in_text_are_preserved():
 
             TEXT = 'foo\nbar'
 
-    actual = to_string(foo(), indent=None, prepend_doctype=False)
+    actual = to_string(foo(), indent=None, html_doctype=False)
 
     assert actual == (
             '<foo><bar><baz>foo\nbar\nbaz</baz></bar><bar>foo\nbar</bar></foo>'

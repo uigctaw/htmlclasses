@@ -5,3 +5,4 @@ set -e
 ./flake8.sh
 ./mypy.sh
 ./bandit.sh
+./spelling.sh

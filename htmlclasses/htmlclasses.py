@@ -110,7 +110,7 @@ def to_string(
         element: E,
         *,
         indent: Optional[str] = None,
-        prepend_doctype: bool = True,
+        html_doctype: bool = True,
         _cumulative_indent: str = '',
         ) -> str:
     """Serialize an E instance.
@@ -119,7 +119,7 @@ def to_string(
     ----------
     element: n/c.
     indent: If it's given the code will be indented accordingly.
-    prepend_doctype: Whether to prepend the DOCTYPE html declaration.
+    html_doctype: Whether to prepend the DOCTYPE html declaration.
     _cumulative_indent: It's private. Don't use.
 
     Returns
@@ -127,7 +127,7 @@ def to_string(
     Valid (hopefully) HTML string.
     """
 
-    doctype = '<!DOCTYPE html>' if prepend_doctype else ''
+    doctype = '<!DOCTYPE html>' if html_doctype else ''
     doctype = doctype + '\n' if indent and doctype else doctype
 
     nl = '\n'
@@ -135,7 +135,7 @@ def to_string(
             to_string(
                 e(),
                 indent=indent,
-                prepend_doctype=False,
+                html_doctype=False,
                 _cumulative_indent=_cumulative_indent + (indent or ''),
                 )
             for e in getattr(element, OWNED_ELEMENTS)
