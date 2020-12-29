@@ -2,7 +2,7 @@ from htmlclasses.htmlclasses import E, to_string
 
 
 def to_str(element):
-    return to_string(element, indent=False, prepend_doctype=None)
+    return to_string(element, indent=None, prepend_doctype=False)
 
 
 def test_html_with_no_data():
@@ -10,7 +10,7 @@ def test_html_with_no_data():
     class html(E):
         pass
 
-    assert to_string(html()) == '<!DOCTYPE html>\n<html/>'
+    assert to_string(html()) == '<!DOCTYPE html><html/>'
 
 
 def test_html_with_data():
@@ -19,7 +19,7 @@ def test_html_with_data():
         TEXT = 'Hello world!'
 
     assert to_string(html()) == (
-            '<!DOCTYPE html>\n<html>Hello world!</html>')
+            '<!DOCTYPE html><html>Hello world!</html>')
 
 
 def test_html_with_head_and_body():
@@ -32,8 +32,8 @@ def test_html_with_head_and_body():
         class body(E):
             pass
 
-    assert to_string(html(), indent=False) == (
-            '<!DOCTYPE html>\n<html><head/><body/></html>')
+    assert to_string(html()) == (
+            '<!DOCTYPE html><html><head/><body/></html>')
 
 
 def test_duplicate_tags_are_fine():
@@ -188,7 +188,35 @@ def test_no_need_to_subclass():
     assert to_str(foo()) == '<foo><bar><baz quux="quz">qux</baz></bar></foo>'
 
 
-def test_indent_print():
+def test_indenting_of_elements_with_single_line_texts():
+
+    class foo(E):
+
+        class bar(E):
+
+            class baz:
+
+                TEXT = 'qux'
+                quux = 'quz'
+
+            class baz:
+
+                TEXT = 'qux2'
+                quux = 'quz2'
+
+    actual = to_string(foo(), indent='  ', prepend_doctype=False)
+
+    assert actual == (
+            '<foo>\n'
+            '  <bar>\n'
+            '    <baz quux="quz">qux</baz>\n'
+            '    <baz quux="quz2">qux2</baz>\n'
+            '  </bar>\n'
+            '</foo>'
+            )
+
+
+def test_indenting_of_multi_line_text():
 
     class foo(E):
 
@@ -196,14 +224,43 @@ def test_indent_print():
 
             class baz:
 
-                TEXT = 'qux'
-                quux = 'quz'
+                TEXT = 'foo\nbar\nbaz'
 
-    actual = to_string(foo(), indent='  ', prepend_doctype=None)
+        class bar:
+
+            TEXT = 'foo\nbar'
+
+    actual = to_string(foo(), indent='  ', prepend_doctype=False)
+
     assert actual == (
             '<foo>\n'
             '  <bar>\n'
-            '    <baz quux="quz">qux</baz>\n'
+            '    <baz>foo\n'
+            'bar\n'
+            'baz</baz>\n'
             '  </bar>\n'
+            '  <bar>foo\n'
+            'bar</bar>\n'
             '</foo>'
+            )
+
+
+def test_new_lines_in_text_are_preserved():
+
+    class foo(E):
+
+        class bar:
+
+            class baz:
+
+                TEXT = 'foo\nbar\nbaz'
+
+        class bar:
+
+            TEXT = 'foo\nbar'
+
+    actual = to_string(foo(), indent=None, prepend_doctype=False)
+
+    assert actual == (
+            '<foo><bar><baz>foo\nbar\nbaz</baz></bar><bar>foo\nbar</bar></foo>'
             )

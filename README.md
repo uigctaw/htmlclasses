@@ -42,15 +42,7 @@ This project uses poetry: https://github.com/python-poetry/poetry
 
 ## Examples
 
-Every example uses:
-
-```python
-from htmlclasses import E
-```
-
-### 1. Hello world
-
-
+TBD: will be created dynamically from tests
 
 
 ## Alternatives

@@ -111,7 +111,7 @@ def to_string(
         *,
         indent: Optional[str] = None,
         prepend_doctype: bool = True,
-        _parent_indent: str = '',
+        _cumulative_indent: str = '',
         ) -> str:
     """Serialize an E instance.
 
@@ -119,25 +119,24 @@ def to_string(
     ----------
     element: n/c.
     indent: If it's given the code will be indented accordingly.
-        Multi line TEXT can produce ugly results, because it's not given
-        any special treatment.
     prepend_doctype: Whether to prepend the DOCTYPE html declaration.
-    _parent_indent: It's private. Don't use.
+    _cumulative_indent: It's private. Don't use.
 
     Returns
     -------
     Valid (hopefully) HTML string.
     """
 
-    doctype = '<!DOCTYPE html>\n' if prepend_doctype else ''
-    indent = indent or ''
+    doctype = '<!DOCTYPE html>' if prepend_doctype else ''
+    doctype = doctype + '\n' if indent and doctype else doctype
 
-    children = ''.join(
+    nl = '\n'
+    children = f'{"" if indent is None else nl}'.join(
             to_string(
                 e(),
                 indent=indent,
                 prepend_doctype=False,
-                _parent_indent=_parent_indent + indent,
+                _cumulative_indent=_cumulative_indent + (indent or ''),
                 )
             for e in getattr(element, OWNED_ELEMENTS)
             )
@@ -150,17 +149,51 @@ def to_string(
             )
 
     attrs = ' ' + attrs if attrs else ''
-    line_break = '\n' if indent and children else ''
 
-    if element.TEXT == '' and not children:
-        tag = f'{_parent_indent}<{tag}{attrs}/>{line_break}'
+    element_str = _calculate_element_str(
+            indent=indent,
+            cumulative_indent=_cumulative_indent,
+            element_text=element.TEXT,
+            children_str=children,
+            attrs=attrs,
+            tag=tag,
+            )
+
+    string = doctype + element_str
+
+    return string.rstrip('\n')
+
+
+def _calculate_element_str(
+        *,
+        indent: Optional[str],
+        cumulative_indent: str,
+        element_text: str,
+        children_str: str,
+        attrs: str,
+        tag: str,
+        ):
+
+    if indent is None:
+        if element_text or children_str:
+            return f'<{tag}{attrs}>{element_text}{children_str}</{tag}>'
+        else:
+            return f'<{tag}{attrs}/>'
     else:
-        tag = (
-                f'{_parent_indent}<{tag}{attrs}>{element.TEXT}{line_break}'
-                f'{children}{line_break}'
-                f'{line_break and _parent_indent}</{tag}>'
-                )
+        nl = '\n'
+        indent = indent or ''
+        if element_text or children_str:
 
-    string = doctype + tag
+            if children_str:
+                children_str = nl + children_str + nl
+                suffix_indent = cumulative_indent
+            else:
+                suffix_indent = ''
 
-    return string
+            return (
+                    f'{cumulative_indent}<{tag}{attrs}>{element_text}'
+                    f'{children_str}'
+                    f'{suffix_indent}</{tag}>{nl}'
+                    )
+        else:
+            return f'{cumulative_indent}<{tag}{attrs}/>{nl}'
