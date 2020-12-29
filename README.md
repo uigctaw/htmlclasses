@@ -35,11 +35,7 @@ This project is managed with poetry: https://github.com/python-poetry/poetry
 
 ### Running tests
 
-1. *./check_all.sh*, which executes:
-    1. *./run_tests.sh* - unit tests
-    2. *./flake8.sh* - lint
-    3. *./mypy.sh* - static type checker
-    4. *./bandit.sh* - common security issues checker
+`./check_all.sh`
 
 ## Examples
 
