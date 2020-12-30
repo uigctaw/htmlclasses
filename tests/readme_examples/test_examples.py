@@ -8,7 +8,7 @@ def test_example_scripts_generate_expected_code():
         expected = module.EXPECTED_HTML.strip()
         actual = to_string(module.html(), indent='    ')
         if actual != expected:
-            failed.append(module.name)
+            failed.append(module.__name__)
             print(
                     'Expected:',
                     '----',
