@@ -1,5 +1,5 @@
 from .generate_checksums import iter_example_modules
-from htmlclasses.htmlclasses import to_string
+from htmlclasses import to_string
 
 
 def test_example_scripts_generate_expected_code():

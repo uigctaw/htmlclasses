@@ -4,7 +4,7 @@ from tests.readme_examples.generate_checksums import (
         iter_example_modules,
         iter_examples,
 )
-from htmlclasses.htmlclasses import to_string
+from htmlclasses import to_string
 import argparse
 import pathlib
 import re

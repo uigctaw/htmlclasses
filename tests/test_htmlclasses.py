@@ -1,4 +1,4 @@
-from htmlclasses.htmlclasses import E, to_string
+from htmlclasses import E, to_string
 
 
 def to_str(element):
