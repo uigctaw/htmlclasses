@@ -10,8 +10,7 @@ rather than write Python-like mini language engulfed in HTML.
 
 ## Goals
 
-Being able to write unconstrained Python code that ends up being
-converted into HTML.
+Generating valid HTML from pure Python code.
 
 ## Non-goals
 
@@ -24,7 +23,7 @@ Features geared toward JavaScript.
 
 ## Installation
 
-TBD
+`pip install htmlclasses`
 
 ## Developing
 
