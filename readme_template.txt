@@ -7,6 +7,9 @@ in HTML template files. However, I would very much prefer
 to be able to write Python that gets converted to HTML 
 rather than write Python-like mini language engulfed in HTML. 
 
+## Version
+
+{version}
 
 ## Goals
 
