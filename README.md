@@ -51,8 +51,6 @@ to_string(html(), indent='    ')
 
 ### Hello World
 
-Python:
-
 ```python
 from htmlclasses import E
 
@@ -68,8 +66,6 @@ class html(E):
 
             TEXT = 'Hello, world!'
 ```
-
-HTML:
 
 ```html
 <!DOCTYPE html>

@@ -39,9 +39,7 @@ def get_formatted_examples():
                 re.DOTALL,
                 ).groups()
         html_code = eval(to_html_code)
-        formatted.append('Python:')
         formatted.append('```python\n' + python_code.strip()  + '\n```')
-        formatted.append('HTML:')
         formatted.append('```html\n' + html_code.strip()  + '\n```')
     return '\n\n'.join(formatted)
 
