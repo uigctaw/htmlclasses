@@ -1,4 +1,4 @@
-from htmlclasses.htmlclasses import E
+from htmlclasses import E
 
 
 class html(E):

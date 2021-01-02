@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from dataclasses import dataclass
 from importlib import import_module
 import argparse

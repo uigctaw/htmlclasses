@@ -41,12 +41,20 @@ This project is managed with poetry: https://github.com/python-poetry/poetry
 
 ## Examples
 
-### Hello World
-
-This Python code:
+To convert Python to HTML run:
 
 ```python
-from htmlclasses.htmlclasses import E
+from htmlclasses import to_string
+
+to_string(html(), indent='    ')
+```
+
+### Hello World
+
+Python:
+
+```python
+from htmlclasses import E
 
 
 class html(E):
@@ -61,9 +69,10 @@ class html(E):
             TEXT = 'Hello, world!'
 ```
 
-Produces this HTML code:
+HTML:
 
 ```html
+<!DOCTYPE html>
 <html>
     <head/>
     <body>
@@ -71,15 +80,6 @@ Produces this HTML code:
     </body>
 </html>
 ```
-
-Which renders as:
-
-<html>
-    <head/>
-    <body>
-        <p>Hello, world!</p>
-    </body>
-</html>
 
 ## Alternatives
 

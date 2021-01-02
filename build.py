@@ -27,23 +27,22 @@ def get_formatted_examples():
     formatted = []
     python_code_end = 'EXPECTED_HTML'
     for example, module in zip(iter_examples(), iter_example_modules()):
+        html = module.html
+        to_html_code = "to_string(html(), indent='    ')"
+        formatted.append('To convert Python to HTML run:')
+        formatted.append('```python\nfrom htmlclasses import to_string')
+        formatted.append(f'{to_html_code}\n```')
         formatted.append('### ' + example.pretty_name)
         python_code, = re.match(
                 r'(.*)' + python_code_end,
                 example.text,
                 re.DOTALL,
                 ).groups()
-        html_code = to_string(
-                module.html(), 
-                indent='    ', 
-                html_doctype=False,
-                )
-        formatted.append('This Python code:')
+        html_code = eval(to_html_code)
+        formatted.append('Python:')
         formatted.append('```python\n' + python_code.strip()  + '\n```')
-        formatted.append('Produces this HTML code:')
+        formatted.append('HTML:')
         formatted.append('```html\n' + html_code.strip()  + '\n```')
-        formatted.append('Which renders as:')
-        formatted.append(html_code.strip())
     return '\n\n'.join(formatted)
 
 
