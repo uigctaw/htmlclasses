@@ -1,10 +1,11 @@
 import inspect
 import types
 
-OWNED_ELEMENTS = '__OWNED_ELEMENTS'
-OWNED_ELEMENT_INSTANCES = '__OWNED_ELEMENT_INSTANCES'
-ELEMENT_ATTRIBUTES = '__ELEMENT_ATTRIBUTES'
-TEXT = 'TEXT'
+OWNED_ELEMENTS = '_OWNED_ELEMENTS'
+ELEMENT_ATTRIBUTES = '_ELEMENT_ATTRIBUTES'
+
+OWNED_ELEMENT_INSTANCES = '_OWNED_ELEMENT_INSTANCES'
+_TEXT_ATTRIBUTE_NAME = 'TEXT'
 
 
 class _Element:
@@ -12,7 +13,7 @@ class _Element:
 
 
 def _is_elem_attribute(name):
-    return not name.startswith('_') and name != TEXT
+    return not name.startswith('_') and name != _TEXT_ATTRIBUTE_NAME
 
 
 def _to_elem_attr_name(name):
@@ -40,21 +41,21 @@ def _create_element_class(name, value):
     """Covert plain `class foo:` to sublcass of `_Element`"""
 
     def populate_namespace(ns):
-        ns[TEXT] = ns.get(TEXT, '')
+        ns[_TEXT_ATTRIBUTE_NAME] = ns.get(_TEXT_ATTRIBUTE_NAME, '')
         for k, v in value.__dict__.items():
             ns[k] = v
 
     new = types.new_class(
             name,
             (_Element,),
-            kwds=dict(metaclass=Meta),
+            kwds=dict(metaclass=_Meta),
             exec_body=populate_namespace,
             )
 
     return new
 
 
-class DictForCollectingElements(dict):
+class _DictForCollectingElements(dict):
 
     def __init__(self):
         """Collect some items on the fly.
@@ -79,11 +80,11 @@ class DictForCollectingElements(dict):
             super().__setitem__(name, value)
 
 
-class Meta(type):
+class _Meta(type):
 
     @classmethod
     def __prepare__(mcs, name, bases, **kwargs):
-        d = DictForCollectingElements()
+        d = _DictForCollectingElements()
         elements_owned_by_bases = sum(
                 [getattr(base, OWNED_ELEMENTS, []) for base in bases],
                 [],
@@ -100,6 +101,26 @@ class Meta(type):
         return d
 
 
-class E(_Element, metaclass=Meta):
+class E(_Element, metaclass=_Meta):
+    """Subclass this element to create an HTML tree.
+
+    Example:
+
+        class html(E):
+            class head(E):
+                class title(E):
+                    TEXT = 'This is a title'
+
+                class meta(E):
+                    charset = 'UTF-8'
+
+                class meta(E):
+                    # note the duplicated class names - that's fine
+                    name = 'description'
+                    content = 'usage example'
+
+            class body(E):
+                ...
+    """
 
     TEXT = ''

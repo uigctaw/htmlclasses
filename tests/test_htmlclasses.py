@@ -1,6 +1,10 @@
 from htmlclasses import E, to_string
 
 
+def test_base_class_has_the_text_attribute_element():
+    assert E.TEXT == ''
+
+
 def to_str(element):
     return to_string(element, indent=None, html_doctype=False)
 

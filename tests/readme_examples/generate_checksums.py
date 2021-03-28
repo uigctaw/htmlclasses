@@ -7,7 +7,6 @@ import hashlib
 import json
 import pathlib
 import re
-import yaml
 
 
 EXAMPLE_FILE_PATTERN = re.compile(r'example_(\w+)\.py')
@@ -60,7 +59,7 @@ def calculate_checksums():
 
 def read_checksums():
     with open(file_here(CHECKSUM_FILE)) as fh:
-        return yaml.safe_load(fh.read())
+        return json.load(fh)
 
 
 def file_here(name):
