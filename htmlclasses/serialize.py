@@ -22,22 +22,6 @@ def to_string(
     Returns
     -------
     Valid HTML string.
-
-    Example
-    -------
-
-    class body(E):
-
-        class p(E):
-            TEXT = 'foo'
-
-        class p(E):
-            TEXT = 'bar'
-
-        class p(E):
-            TEXT = 'baz'
-
-    assert to_str(body()) == '<body><p>foo</p><p>bar</p><p>baz</p></body>'
     """
 
     doctype = '<!DOCTYPE html>' if html_doctype else ''
