@@ -1,14 +1,14 @@
-from typing import Optional
+from typing import NamedTuple, Type, Union
+import html
 
-from .htmlclasses import E, ELEMENT_ATTRIBUTES, OWNED_ELEMENTS
+from .htmlclasses import E
 
 
 def to_string(
-        element: E,
+        element: Type[E],
         *,
-        indent: Optional[str] = None,
+        indent: str = '',
         html_doctype: bool = True,
-        _cumulative_indent: str = '',
         ) -> str:
     """Serialize an E instance.
 
@@ -17,80 +17,106 @@ def to_string(
     element: n/c.
     indent: If it's given the code will be indented accordingly.
     html_doctype: Whether to prepend the DOCTYPE html declaration.
-    _cumulative_indent: It's private. Don't use.
 
     Returns
     -------
     Valid HTML string.
     """
 
-    doctype = '<!DOCTYPE html>' if html_doctype else ''
-    doctype = doctype + '\n' if indent and doctype else doctype
+    lines = _lines(element, doctype=html_doctype)
+    if indent:
+        return '\n'.join(
+            indent * line.indent_level + line.text
+            for line in lines
+        )
+    else:
+        return ''.join(line.text for line in lines)
 
-    nl = '\n'
-    children = f'{"" if indent is None else nl}'.join(
-            to_string(
-                e(),
-                indent=indent,
-                html_doctype=False,
-                _cumulative_indent=_cumulative_indent + (indent or ''),
+
+class IndentedLine(NamedTuple):
+
+    text: str
+    indent_level: int
+
+
+def _lines(
+        element: Union[Type[E], E, str],
+        *,
+        indent_level: int = 0,
+        doctype: bool = False,
+):
+    # For the purpose of pretty formatted HTML it's convenient
+    # for me to think of it in terms of collections of lines
+    # with indent levels.
+    if doctype:
+        yield IndentedLine('<!DOCTYPE html>', indent_level)
+
+    if isinstance(element, str):
+        for line in element.splitlines():
+            yield IndentedLine(html.escape(line), indent_level)
+        return
+
+    if isinstance(element, E):
+        for e in element._subelements:
+            for line in _lines(e, indent_level=indent_level):
+                yield line
+        return
+
+    tag_name = element.__name__
+
+    is_leaf = not element._trees_and_leaves
+    tag_opening = _build_tag_opening(
+            tag_name, is_leaf, element._element_attributes)
+    tag_closing = _build_tag_closing(tag_name, is_leaf)
+
+    if tag_name.lower() == 'pre':
+        yield IndentedLine(
+                _handle_pre(element, tag_opening, tag_closing),
+                indent_level,
                 )
-            for e in getattr(element, OWNED_ELEMENTS)
-            )
+        return
 
-    tag = type(element).__name__
+    yield IndentedLine(tag_opening, indent_level)
+    for tree_or_leaf in element._trees_and_leaves:
+        for indented_line in _lines(
+                tree_or_leaf, indent_level=indent_level + 1):
+            yield indented_line
+    if tag_closing:
+        yield IndentedLine(tag_closing, indent_level)
 
+
+def _build_tag_opening(tag_name, is_leaf, attributes):
     attrs = ' '.join(
             f'{k}="{v}"'
-            for k, v in getattr(element, ELEMENT_ATTRIBUTES).items()
+            for k, v in attributes.items()
             )
 
-    attrs = ' ' + attrs if attrs else ''
-
-    element_str = _calculate_element_str(
-            indent=indent,
-            cumulative_indent=_cumulative_indent,
-            element_text=element.TEXT,
-            children_str=children,
-            attrs=attrs,
-            tag=tag,
-            )
-
-    string = doctype + element_str
-
-    return string.rstrip('\n')
-
-
-def _calculate_element_str(
-        *,
-        indent: Optional[str],
-        cumulative_indent: str,
-        element_text: str,
-        children_str: str,
-        attrs: str,
-        tag: str,
-        ):
-
-    if indent is None:
-        if element_text or children_str:
-            return f'<{tag}{attrs}>{element_text}{children_str}</{tag}>'
-        else:
-            return f'<{tag}{attrs}/>'
+    prefix = '<' + tag_name
+    middle = ' ' + attrs if attrs else ''
+    if is_leaf:
+        suffix = '/>'
     else:
-        nl = '\n'
-        indent = indent or ''
-        if element_text or children_str:
+        suffix = '>'
+    return prefix + middle + suffix
 
-            if children_str:
-                children_str = nl + children_str + nl
-                suffix_indent = cumulative_indent
-            else:
-                suffix_indent = ''
 
-            return (
-                    f'{cumulative_indent}<{tag}{attrs}>{element_text}'
-                    f'{children_str}'
-                    f'{suffix_indent}</{tag}>{nl}'
-                    )
-        else:
-            return f'{cumulative_indent}<{tag}{attrs}/>{nl}'
+def _build_tag_closing(tag_name, is_leaf):
+    if is_leaf:
+        return ''
+    else:
+        return f'</{tag_name}>'
+
+
+def _handle_pre(element, tag_opening, tag_closing):
+    text_list = element._trees_and_leaves
+
+    if not text_list or text_list == ['']:
+        return tag_opening + tag_closing
+    elif len(text_list) != 1 or not isinstance(text_list[0], str):
+        raise NotImplementedError(
+                f'Do now know what to do with {element}.'
+                + ' Is it even legal HTML?'
+        )
+    else:
+        text, = text_list
+        return tag_opening + html.escape(text) + tag_closing

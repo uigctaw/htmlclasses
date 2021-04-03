@@ -26,12 +26,12 @@ PYPROJECT_TOML = file_from_here('pyproject.toml')
 def get_formatted_examples():
     formatted = []
     python_code_end = 'EXPECTED_HTML'
+    to_html_code = "to_string(html, indent='    ')"
+    formatted.append('To convert Python to HTML run:')
+    formatted.append('```python\nfrom htmlclasses import to_string')
+    formatted.append(f'{to_html_code}\n```')
     for example, module in zip(iter_examples(), iter_example_modules()):
         html = module.html
-        to_html_code = "to_string(html(), indent='    ')"
-        formatted.append('To convert Python to HTML run:')
-        formatted.append('```python\nfrom htmlclasses import to_string')
-        formatted.append(f'{to_html_code}\n```')
         formatted.append('### ' + example.pretty_name)
         python_code, = re.match(
                 r'(.*)' + python_code_end,

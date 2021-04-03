@@ -1,3 +1,3 @@
 #!/bin/bash
-poetry run python -m mypy htmlclasses
-poetry run python -m mypy tests
+poetry run python -m mypy --show-error-codes htmlclasses
+poetry run python -m mypy --show-error-codes tests

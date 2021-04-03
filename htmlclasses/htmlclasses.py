@@ -1,10 +1,10 @@
 import inspect
 import types
 
-OWNED_ELEMENTS = '_OWNED_ELEMENTS'
-ELEMENT_ATTRIBUTES = '_ELEMENT_ATTRIBUTES'
+TREES_AND_LEAVES = '_trees_and_leaves'
+ELEMENT_ATTRIBUTES = '_element_attributes'
 
-OWNED_ELEMENT_INSTANCES = '_OWNED_ELEMENT_INSTANCES'
+OWNED_ELEMENT_INSTANCES = '_owned_element_instances'
 _TEXT_ATTRIBUTE_NAME = 'TEXT'
 
 
@@ -41,7 +41,6 @@ def _create_element_class(name, value):
     """Covert plain `class foo:` to sublcass of `_Element`"""
 
     def populate_namespace(ns):
-        ns[_TEXT_ATTRIBUTE_NAME] = ns.get(_TEXT_ATTRIBUTE_NAME, '')
         for k, v in value.__dict__.items():
             ns[k] = v
 
@@ -66,12 +65,12 @@ class _DictForCollectingElements(dict):
         HTML elements, we have to circumvent this constraint.
         """
         super().__init__()
-        self[OWNED_ELEMENTS] = []
+        self[TREES_AND_LEAVES] = []
         self[ELEMENT_ATTRIBUTES] = {}
 
     def __setitem__(self, name, value):
-        if _is_elem_class(value):
-            self[OWNED_ELEMENTS].append(value)
+        if _is_elem_class(value) or name == _TEXT_ATTRIBUTE_NAME:
+            self[TREES_AND_LEAVES].append(value)
         elif _can_be_converted_to_element_class(name, value):
             self[name] = _create_element_class(name, value)
         elif _is_elem_attribute(name):
@@ -85,11 +84,11 @@ class _Meta(type):
     @classmethod
     def __prepare__(mcs, name, bases, **kwargs):
         d = _DictForCollectingElements()
-        elements_owned_by_bases = sum(
-                [getattr(base, OWNED_ELEMENTS, []) for base in bases],
+        children_of_bases = sum(
+                [getattr(base, TREES_AND_LEAVES, []) for base in bases],
                 [],
                 )
-        d[OWNED_ELEMENTS].extend(elements_owned_by_bases)
+        d[TREES_AND_LEAVES].extend(children_of_bases)
 
         base_element_attributes = {
                 k: v
@@ -99,6 +98,15 @@ class _Meta(type):
         d[ELEMENT_ATTRIBUTES] = base_element_attributes
 
         return d
+
+    def __getattr__(cls, name):
+        def factory(text, **attributes):
+            namespace = _DictForCollectingElements()
+            namespace[_TEXT_ATTRIBUTE_NAME] = text
+            for k, v in attributes.items():
+                namespace[k] = v
+            return type(name, (E,), namespace)
+        return factory
 
 
 class E(_Element, metaclass=_Meta):
@@ -123,4 +131,5 @@ class E(_Element, metaclass=_Meta):
                 ...
     """
 
-    TEXT = ''
+    def __init__(self, *subelements):
+        self._subelements = subelements

@@ -9,7 +9,7 @@ rather than write Python-like mini language engulfed in HTML.
 
 ## Version
 
-0.2.2
+0.3.0
 
 ## Goals
 
@@ -46,7 +46,7 @@ To convert Python to HTML run:
 ```python
 from htmlclasses import to_string
 
-to_string(html(), indent='    ')
+to_string(html, indent='    ')
 ```
 
 ### Hello World
@@ -72,7 +72,49 @@ class html(E):
 <html>
     <head/>
     <body>
-        <p>Hello, world!</p>
+        <p>
+            Hello, world!
+        </p>
+    </body>
+</html>
+```
+
+### Repeated Elements
+
+```python
+from htmlclasses import E
+
+
+class html(E):
+
+    class head(E):  # Must sublcass if repeating tags
+
+        class meta:
+            name = 'description'
+            content = 'Framework usage examples'
+
+        class meta:  # type: ignore[no-redef]  # noqa: F811
+            name = 'keywords'
+            content = 'Python, HTML'
+
+    class body:
+
+        class p:
+
+            TEXT = 'Hello, world!'
+```
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="description" content="Framework usage examples"/>
+        <meta name="keywords" content="Python, HTML"/>
+    </head>
+    <body>
+        <p>
+            Hello, world!
+        </p>
     </body>
 </html>
 ```

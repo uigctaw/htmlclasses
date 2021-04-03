@@ -6,7 +6,8 @@ def test_example_scripts_generate_expected_code():
     failed = []
     for module in iter_example_modules():
         expected = module.EXPECTED_HTML.strip()
-        actual = to_string(module.html(), indent='    ')
+
+        actual = to_string(module.html, indent='    ')
         if actual != expected:
             failed.append(module.__name__)
             print(

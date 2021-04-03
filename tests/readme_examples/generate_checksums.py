@@ -9,7 +9,7 @@ import pathlib
 import re
 
 
-EXAMPLE_FILE_PATTERN = re.compile(r'example_(\w+)\.py')
+EXAMPLE_FILE_PATTERN = re.compile(r'example_[^_]+_(\w+)\.py')
 ALL_EXAMPLES = 'all'
 THIS_MODULE_PATH = pathlib.Path(__file__).parent
 CHECKSUM_FILE = 'checksums.txt'
@@ -32,7 +32,11 @@ def iter_examples():
             lambda path: EXAMPLE_FILE_PATTERN.match(path.parts[-1]),
             THIS_MODULE_PATH.glob('*'),
             )
-    for example in examples:
+
+    def sort_key(example_name):
+        return int(re.search('_([^_]+)', example_name.name).group(1))
+
+    for example in sorted(examples, key=sort_key):
         with open(example, 'r') as fh:
             text = fh.read()
         example_file_name = pathlib.Path(example).parts[-1]
