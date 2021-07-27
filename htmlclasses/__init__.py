@@ -14,7 +14,7 @@ Example
 ...             TEXT = 'baz'
 ...             class_ = 'note trailing underscore'
 ...
->>> print(to_string(html(), indent='    '))
+>>> print(to_string(html, indent='    '))
 <!DOCTYPE html>
 <html>
     <body>
