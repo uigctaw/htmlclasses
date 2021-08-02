@@ -13,7 +13,7 @@ def show(svg):
                 f'<!DOCTYPE html><html><body>'
                 f'<svg width="1000" height="1000">{svg}</svg></body></html>')
         webbrowser.open(path)
-        time.sleep(1)
+        breakpoint()
 
 
 def test_plot_line():
@@ -74,10 +74,10 @@ def test_plot_axes():
         )
 
 
-def test_plot_axes_x_range_is_all_bigger_than_0():
+def test_plot_axes_x_range_is_all_greater_than_0():
     axes = svg.axes(
-            x_range=(20, 70),
-            y_range=(-50, 50),
+            x_range=(-120, -70),
+            y_range=(-250, -151),
             x_axis_length=200,
             y_axis_length=100,
             )
