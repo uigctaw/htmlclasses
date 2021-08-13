@@ -31,7 +31,7 @@ def iter_examples():
     examples = filter(
             lambda path: EXAMPLE_FILE_PATTERN.match(path.parts[-1]),
             THIS_MODULE_PATH.glob('*'),
-            )
+    )
 
     def sort_key(example_name):
         return int(re.search('_([^_]+)', example_name.name).group(1))
@@ -46,7 +46,7 @@ def iter_examples():
 def iter_example_modules():
     for example in iter_examples():
         module = import_module(
-                'tests.readme_examples.' + example.name.strip('.py'))
+            'tests.readme_examples.' + example.name.strip('.py'))
         yield module
 
 
@@ -73,10 +73,10 @@ def file_here(name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-            '--do',
-            action='store_true',
-            help='Recalculate the checksums',
-            )
+        '--do',
+        action='store_true',
+        help='Recalculate the checksums',
+    )
     args = parser.parse_args()
     if args.do:
         checksums = calculate_checksums()

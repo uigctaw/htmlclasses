@@ -1,3 +1,3 @@
 #!/bin/bash
-poetry run python -m mypy --show-error-codes htmlclasses
-poetry run python -m mypy --show-error-codes tests
+poetry run mypy --show-error-codes htmlclasses --disable-error-code no-redef
+poetry run mypy --show-error-codes tests --disable-error-code no-redef
