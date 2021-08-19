@@ -4,7 +4,7 @@ version = "0.3.1"
 description = "Python in, HTML out."
 authors = ["uigctaw <uigctaw@protonmail.com>"]
 readme="README.md"
-url="https://github.com/uigctaw/htmlclasses"
+homepage="https://github.com/uigctaw/htmlclasses"
 
 [tool.poetry.dependencies]
 python = "^3.9"
