@@ -30,4 +30,4 @@ from .serialize import to_string  # noqa: F401
 
 __all__ = ('E', 'to_string')
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'

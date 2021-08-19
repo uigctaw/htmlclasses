@@ -43,6 +43,10 @@ This project is managed with poetry: https://github.com/python-poetry/poetry
 
 {examples}
 
+## Work in progress
+
+SVG utilities for creating plots.
+
 ## Alternatives
 
 https://pypi.org/project/html

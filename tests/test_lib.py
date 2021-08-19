@@ -1,23 +1,34 @@
+import numpy as np
 import pytest
-from htmlclasses import to_string
+
+from htmlclasses import E, to_string
 from htmlclasses.lib import svg
 
 
-def show(svg):
+def show(svg_stuff):
     """For manual debugging."""
     import tempfile
     import webbrowser
+
+    class html(E):
+
+        class body(E):
+
+            class svg(E):
+                width = 1000
+                height = 1000
+
+                g = svg_stuff
+
     with tempfile.TemporaryDirectory() as td:
         with open(path := td + '/myhtml.html', 'w') as fh:
-            fh.write(
-                f'<!DOCTYPE html><html><body>'
-                f'<svg width="1000" height="1000">{svg}</svg></body></html>')
+            fh.write(to_string(html, indent=' '))
         webbrowser.open(path)
         breakpoint()
 
 
 def test_plot_line():
-    line = svg.line(
+    line = svg.build_line(
             point_from=(4, 5.5),
             point_to=(53.5, 126),
             color='blue',
@@ -33,25 +44,27 @@ def test_plot_line():
 
 @pytest.mark.skip('wip, feature not ready')
 def test_plot_axes_x_range_is_all_greater_than_0():
-    axes = svg.axes(
+    g = svg.axes(
             x_range=(-120, -70),
             y_range=(-250, -151),
             x_axis_length=200,
             y_axis_length=100,
             )
-    string = to_string(axes, html_doctype=False)
-    show(string)
-    assert string == (
-        '<g>'
-        '<defs>'
-        '<marker id="arrow" viewBox="0 0 10 10" refX="0" refY="5.0"'
-        ' markerWidth="5.0" markerHeight="5.0" orient="auto-start-reverse">'
-        '<path d="M 0 2 L 10 5 L 0 8 z"/>'
-        '</marker>'
-        '</defs>'
-        '<line x1="0" y1="110.0" x2="200" y2="110.0" stroke="black"'
-        ' stroke-width="2" marker-end="url(#arrow)"/>'
-        '<line x1="100.0" y1="210" x2="100.0" y2="10" stroke="black"'
-        ' stroke-width="2" marker-end="url(#arrow)"/>'
-        '</g>'
-        )
+    show(g)
+
+
+@pytest.mark.skip('wip, feature not ready')
+def test_2_plots():
+    xs1 = np.linspace(-5, 10)
+    ys1 = np.sin(xs1) * 2
+    g = svg.build_plot(
+        points=zip(xs1, ys1),
+        x_axis_length=400,
+        y_axis_length=300,
+        y_axis_name='Just sine',
+        x_axis_name='X',
+    )
+    show(g)
+
+
+# TODO: add test for META

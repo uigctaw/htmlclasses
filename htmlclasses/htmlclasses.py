@@ -6,6 +6,7 @@ ELEMENT_ATTRIBUTES = '_element_attributes'
 
 OWNED_ELEMENT_INSTANCES = '_owned_element_instances'
 _TEXT_ATTRIBUTE_NAME = 'TEXT'
+_META_ATTRIBUTE_NAME = 'META'
 
 
 class _Element:
@@ -13,7 +14,10 @@ class _Element:
 
 
 def _is_elem_attribute(name):
-    return not name.startswith('_') and name != _TEXT_ATTRIBUTE_NAME
+    return not name.startswith('_') and name not in (
+            _TEXT_ATTRIBUTE_NAME,
+            _META_ATTRIBUTE_NAME,
+            )
 
 
 def _to_elem_attr_name(name):

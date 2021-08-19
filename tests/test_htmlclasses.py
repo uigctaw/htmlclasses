@@ -489,3 +489,29 @@ def test_simplified_syntax_for_mix_of_text_and_elements():
               What browser are you using?
             </p>
             ''').strip()
+
+
+def test_meta_attribute_has_special_treatment():
+
+    class p(E):
+
+        TEXT = 'hello'
+        META = 'this is meta'
+
+        class _p:
+
+            TEXT = 'world'
+            META = 'so is this'
+
+            class _div:
+
+                TEXT = 'hmmm'
+                META = dict(a=1, b=2)
+
+            div = _div
+
+        p = _p
+
+    assert p.META == 'this is meta'
+    assert p._p.META == 'so is this'
+    assert p._p._div.META == dict(a=1, b=2)

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional, NamedTuple
 
 from htmlclasses import E
@@ -7,8 +8,13 @@ class Point(NamedTuple):
     x: float
     y: float
 
+    def __abs__(self):
+        x = self.x
+        y = self.y
+        return (x * x + y * y) ** 0.5
 
-def line(
+
+def build_line(
         *,
         point_from: tuple[float, float],
         point_to: tuple[float, float],
@@ -34,19 +40,26 @@ def line(
     return line
 
 
-def axes(
+def build_axes(
         x_range: tuple[float, float],
         y_range: tuple[float, float],
         x_axis_length: float,
         y_axis_length: float,
+        y_axis_name: str,
+        x_axis_name: str,
         ):
     # TODO support for units of length
+
+    scale = Point(
+        x_axis_length / (x_range[1] - x_range[0]),
+        y_axis_length / (y_range[1] - y_range[0]),
+    )
 
     x_start, x_end = x_range
     y_start, y_end = y_range
 
     for a, b in [(x_start, x_end), (y_start, y_end)]:
-        if b >= a:
+        if b <= a:
             raise ValueError(
                 'Axes must start at low value and end end at higher.'
                 + f' Got: start:{a}, end:{b}'
@@ -57,10 +70,11 @@ def axes(
     y_range_greater_than_0 = y_start > 0
     y_range_less_than_0 = y_end < 0
 
-    dotted_len = 40
-    arrow_size = 5
-    left_margin = 5
-    top_margin = arrow_size * 2 + 5
+    dotted_len = 40  # why?
+    arrow_size = 5  # why?
+    left_margin = 5  # why?
+    text_height = 20  # why?
+    top_margin = arrow_size * 2 + 5 + text_height  # why * 2? why 5?
 
     if x_range_greater_than_0:
         x_intersection = dotted_len / 2
@@ -162,10 +176,8 @@ def axes(
             ),
         )
 
-    _line = line
-
     def draw_line(kwargs):
-        return _line(color='black', width=2, **kwargs)
+        return build_line(color='black', width=2, **kwargs)
 
     x_line = x_lines_kwargs['x_line']
     # mypy getting confused...
@@ -181,6 +193,11 @@ def axes(
     class g(E):
 
         transform = f'translate({left_margin} {top_margin})'
+
+        class text:
+
+            TEXT = f'{y_axis_name} ({x_axis_name})'
+            y = -text_height
 
         class defs(E):
 
@@ -225,26 +242,114 @@ def axes(
 
         class text:
 
-            TEXT = 'x0 value'
+            TEXT = f'{x_range[0]:.2f}'
             x = x0_marker.x
             y = x0_marker.y + text_offset.y
 
         class text:
 
-            TEXT = 'x1 value'
+            TEXT = f'{x_range[-1]:.2f}'
             x = x1_marker.x
             y = x1_marker.y + text_offset.y
 
         class text:
 
-            TEXT = 'y0 value'
+            TEXT = f'{y_range[0]:.2f}'
             x = y0_marker.x + text_offset.x
             y = y0_marker.y
 
         class text:
 
-            TEXT = 'y1 value'
+            TEXT = f'{y_range[-1]:.2f}'
             x = y1_marker.x + text_offset.x
             y = y1_marker.y
 
+        META = AxesMeta(
+                svg_translation=Point(left_margin, top_margin),
+                translation=Point(x_intersection, y_intersection),
+                scale=scale,
+                )
+
     return g
+
+
+@dataclass(frozen=True)
+class AxesMeta:
+
+    svg_translation: Point
+    translation: Point
+    scale: Point
+
+
+class _Points(list):
+
+    def __init__(self, xys):
+        super().__init__(xys)
+        self.xs, self.ys = zip(*self)
+        self.max_x = max(self.xs)
+        self.min_x = min(self.xs)
+        self.max_y = max(self.ys)
+        self.min_y = min(self.ys)
+
+
+# class _MultiPlotData(list):
+
+    # def __init__(self, multi_plot_data):
+        # super().__init__(map(_Points, multi_plot_data))
+        # self.max_x = max(pd.max_x for pd in self)
+        # self.min_x = min(pd.min_x for pd in self)
+        # self.max_y = max(pd.max_y for pd in self)
+        # self.min_y = min(pd.min_y for pd in self)
+
+
+def build_plot(
+        *,
+        points,
+        x_axis_length,
+        y_axis_length,
+        y_axis_name,
+        x_axis_name,
+        ):
+
+    points = _Points(points)
+
+    axes = build_axes(
+        x_range=(points.min_x, points.max_x),
+        y_range=(points.min_y, points.max_y),
+        x_axis_length=y_axis_length,
+        y_axis_length=x_axis_length,
+        y_axis_name=y_axis_name,
+        x_axis_name=x_axis_name,
+    )
+    svg_translation = axes.META.svg_translation
+    scale = axes.META.scale
+    translation = axes.META.translation
+
+    class g(E):
+        g = axes
+
+        class g(E):
+
+            transform = (
+                    f'translate({svg_translation.x} {svg_translation.y})'
+                    )
+
+            polyline = build_polyline(
+                (
+                    x * scale.x + translation.x,
+                    -y * scale.y + translation.y
+                )
+                for x, y in points
+            )
+
+    return g
+
+
+def build_polyline(points_):
+
+    class polyline:
+        points = ' '.join(f'{x},{y}' for x, y in points_)
+        fill = 'none'
+        stroke = 'black'
+
+    return polyline

@@ -9,7 +9,7 @@ rather than write Python-like mini language engulfed in HTML.
 
 ## Version
 
-0.3.0
+0.3.1
 
 ## Goals
 
@@ -118,6 +118,10 @@ class html(E):
     </body>
 </html>
 ```
+
+## Work in progress
+
+SVG utilities for creating plots.
 
 ## Alternatives
 
