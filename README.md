@@ -9,7 +9,7 @@ rather than write Python-like mini language engulfed in HTML.
 
 ## Version
 
-0.3.1
+0.3.2
 
 ## Goals
 

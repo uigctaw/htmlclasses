@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "htmlclasses"
-version = "0.3.1"
+version = "0.3.2"
 description = "Python in, HTML out."
 authors = ["uigctaw <uigctaw@protonmail.com>"]
 readme="README.md"
